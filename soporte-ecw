@@ -1,0 +1,105 @@
+#!/bin/sh
+
+#  Copyright 2015 José Miguel Manzano <manzano.jm@gmail.com>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#  
+# 
+opcion=$(zenity --width=400 --height=400 --list\
+		--radiolist\
+		--column="Seleccion"\
+		--column="Opcion"\
+		--column="Acción"\
+		--hide-column=2\
+		True 1 "Instrucciones"\
+		False 2 "Descargar ficheros para X64"\
+		False 3 "Instalar X64"\
+		False 4 "Comprobar soporte ECW, JP2 y MrSID"\
+		False 5 "Instalar QGIS"\
+		False 6 "Borrar ficheros descargados innecesarios"\
+		False 7 "Salir")
+
+case $opcion in
+1)
+clear
+zenity --info \
+--text="Vamos a proceder a dar soporte a los ficheros ECW, JP2 y MrSID en QGIS.
+Para ello debes descargar los ficheros necesarios para realizar la instalación.
+Posteriormente selecciona Instalar.
+Después puedes comprobar si tienes el soporte para los fichero con la opción Comprobar soporte ECW, JP2 y MrSID.
+Puedes instalar QGIS (si no lo tienes instalado) con su opción.
+Por último puedes borrar todos los ficheros y carpetas innecesarios de tu carpeta /home."
+soporte-ecw;;
+2)
+clear
+ruta=`pwd`
+usuario=`whoami`
+cd /home/$usuario
+wget https://www.dropbox.com/s/nw2jpj0ej39s5an/gdal_1.11.3-1_amd64.deb
+wget https://www.dropbox.com/s/9uziylpqp3k8440/librerias_ecw_mrsid.tar.gz
+zenity --info \
+--text="Elija ahora la opción Instalar X64"
+cd $ruta
+soporte-ecw;;
+3)
+clear
+ruta=`pwd`
+usuario=`whoami`
+cd /usr/local/lib/
+sudo tar -xzvf /home/$usuario/librerias_ecw_mrsid.tar.gz
+cd /home/$usuario
+sudo dpkg -i gdal_1.11.3-1_amd64.deb
+sudo ldconfig
+zenity --info \
+--text="Tarea finalizada. \nAhora compruebe el soporte \npara ECW, JP2 Y MrSID"
+soporte-ecw;;
+4)
+clear
+ruta=`pwd`
+usuario=`whoami`
+ecw=`gdalinfo --formats | grep -i ECW`
+mrsid=`gdalinfo --formats | grep -i MrSID`
+zenity --info \
+--text="Tarea finalizada.\n$ecw \n$mrsid"
+cd $ruta
+soporte-ecw;;
+5)
+clear
+ruta=`pwd`
+usuario=`whoami`
+cd /home/$usuario
+sudo apt-get install qgis
+sudo apt-get -f install
+sudo chown -R $usuario:$usuario ~/.qgis2
+sudo ldconfig
+zenity --info \
+--text="Tarea finalizada."
+cd $ruta
+soporte-ecw;;
+6)
+clear
+ruta=`pwd`
+usuario=`whoami`
+dir=$HOME
+cd /home/$usuario
+rm -f gdal_1.11.3-1_amd64.deb librerias_ecw_mrsid.tar.gz
+zenity --info \
+--text="Se han eliminado los ficheros innecesarios."
+cd $ruta
+soporte-ecw;;
+7)
+exit;;
+esac
